@@ -1,0 +1,13 @@
+{
+  "solution": {
+    "path": "Intersect.sln",
+    "projects": [
+      "Intersect (Core)\\Intersect.Core.csproj",
+      "Framework\\Intersect.Framework.Core\\Intersect.Framework.Core.csproj",
+      "Intersect.Network\\Intersect.Network.csproj",
+      "Intersect.Server.Framework\\Intersect.Server.Framework.csproj",
+      "Intersect.Server.Core\\Intersect.Server.Core.csproj",
+      "Intersect.Server\\Intersect.Server.csproj"
+    ]
+  }
+}

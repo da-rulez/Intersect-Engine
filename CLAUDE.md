@@ -12,6 +12,14 @@
 - **Current Version**: 0.8.0-beta
 - **Repository**: https://github.com/AscensionGameDev/Intersect-Engine
 
+## Quick Navigation
+
+**⚡ Fast Start?** Read `.claude/QUICK_REF.md` (30 seconds) instead of this full guide.
+
+**🚀 Speed Optimization?** See `.claude/README.md` for build performance tips.
+
+**📋 What to Skip?** Check `.claudeignore` for files to avoid reading.
+
 ## Table of Contents
 
 1. [Codebase Architecture](#codebase-architecture)
