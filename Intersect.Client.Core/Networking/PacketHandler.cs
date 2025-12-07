@@ -1306,7 +1306,7 @@ internal sealed partial class PacketHandler
             }
 
             // Check if the item already exists, if it does replace it. Otherwise just add it.
-            var mapItem = new MapItemInstance(packet.TileIndex, packet.Id, packet.ItemId, packet.BagId, packet.Quantity, packet.Properties);
+            var mapItem = new MapItemInstance(packet.TileIndex, packet.Id, packet.ItemId, packet.BagId, packet.Quantity, packet.Properties, packet.OriginTileIndex);
             if (map.MapItems[packet.TileIndex].Any(item => item.Id == mapItem.Id))
             {
                 for (var index = 0; index < map.MapItems[packet.TileIndex].Count; index++)
