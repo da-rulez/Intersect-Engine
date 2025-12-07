@@ -23,6 +23,25 @@ public partial class MapItem : Item
     [JsonIgnore] public int TileIndex => Y * Options.Instance.Map.MapWidth + X;
 
     /// <summary>
+    /// The origin X position where the item was spawned from (e.g., NPC position).
+    /// Used for scatter animation. Null if item spawned without scatter.
+    /// </summary>
+    [JsonIgnore] public int? OriginX { get; set; }
+
+    /// <summary>
+    /// The origin Y position where the item was spawned from (e.g., NPC position).
+    /// Used for scatter animation. Null if item spawned without scatter.
+    /// </summary>
+    [JsonIgnore] public int? OriginY { get; set; }
+
+    /// <summary>
+    /// Gets the origin tile index for scatter animation, or null if no animation needed.
+    /// </summary>
+    [JsonIgnore] public int? OriginTileIndex => OriginX.HasValue && OriginY.HasValue
+        ? OriginY.Value * Options.Instance.Map.MapWidth + OriginX.Value
+        : null;
+
+    /// <summary>
     /// The Unique Id of this particular MapItemInstance so we can refer to it elsewhere.
     /// </summary>
     public Guid UniqueId { get; private set; }

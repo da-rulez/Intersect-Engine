@@ -1108,7 +1108,7 @@ public static partial class PacketSender
             {
                 if (item.VisibleToAll || item.Owner == player?.Id)
                 {
-                    items.Add(new MapItemUpdatePacket(mapId, item.TileIndex, item.UniqueId, item.ItemId, item.BagId, item.Quantity, item.Properties));
+                    items.Add(new MapItemUpdatePacket(mapId, item.TileIndex, item.UniqueId, item.ItemId, item.BagId, item.Quantity, item.Properties, item.OriginTileIndex));
                 }
             }
         }
@@ -1174,12 +1174,12 @@ public static partial class PacketSender
                 var player = Player.FindOnline(itemRef.Owner);
                 if (player != null)
                 {
-                    player.SendPacket(new MapItemUpdatePacket(mapId, itemRef.TileIndex, itemRef.UniqueId, itemRef.ItemId, itemRef.BagId, itemRef.Quantity, itemRef.Properties));
+                    player.SendPacket(new MapItemUpdatePacket(mapId, itemRef.TileIndex, itemRef.UniqueId, itemRef.ItemId, itemRef.BagId, itemRef.Quantity, itemRef.Properties, itemRef.OriginTileIndex));
                 }
             }
             else
             {
-                SendDataToProximityOnMapInstance(mapId, mapInstanceId, new MapItemUpdatePacket(mapId, itemRef.TileIndex, itemRef.UniqueId, itemRef.ItemId, itemRef.BagId, itemRef.Quantity, itemRef.Properties));
+                SendDataToProximityOnMapInstance(mapId, mapInstanceId, new MapItemUpdatePacket(mapId, itemRef.TileIndex, itemRef.UniqueId, itemRef.ItemId, itemRef.BagId, itemRef.Quantity, itemRef.Properties, itemRef.OriginTileIndex));
             }
         }
     }

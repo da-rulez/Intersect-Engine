@@ -46,4 +46,22 @@ public partial class LootOptions
     /// When killing an NPC which spawns individualized loot for all of its attackers, include loot for all their party members, even if they didn't participate (deal damage) to the npc
     /// </summary>
     public bool IndividualizedLootAutoIncludePartyMembers { get; set; } = false;
+
+    /// <summary>
+    /// When enabled, items dropped from NPCs scatter outward in random directions
+    /// instead of appearing directly at the NPC's position.
+    /// </summary>
+    public bool ScatterEnabled { get; set; } = true;
+
+    /// <summary>
+    /// Maximum distance in tiles that items can scatter from the drop source.
+    /// Items will land randomly within this radius.
+    /// </summary>
+    public int ScatterMaxDistance { get; set; } = 1;
+
+    /// <summary>
+    /// Duration of the scatter animation in milliseconds.
+    /// Items will animate from their origin to their final position over this time.
+    /// </summary>
+    public int ScatterAnimationDuration { get; set; } = 400;
 }

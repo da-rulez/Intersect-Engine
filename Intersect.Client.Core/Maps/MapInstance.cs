@@ -930,7 +930,7 @@ public partial class MapInstance : MapDescriptor, IGameObject<Guid, MapInstance>
         // Draw map items.
         foreach (var (tileIndex, itemInstancesOnTile) in MapItems)
         {
-            // Calculate tile coordinates.
+            // Calculate tile coordinates (final destination).
             var tileX = tileIndex % _width;
             var tileY = (int)Math.Floor(tileIndex / (float)_width);
 
@@ -954,10 +954,36 @@ public partial class MapInstance : MapDescriptor, IGameObject<Guid, MapInstance>
                     continue;
                 }
 
-                var x = X + tileX * _tileWidth;
-                var y = Y + tileY * _tileHeight;
-                var centerX = x + (_tileWidth / 2);
-                var centerY = y + (_tileHeight / 2);
+                // Calculate base destination position
+                var destX = X + tileX * _tileWidth;
+                var destY = Y + tileY * _tileHeight;
+
+                // Check for scatter animation
+                float renderX = destX;
+                float renderY = destY;
+
+                if (mapItemInstance is Items.MapItemInstance concreteItem && concreteItem.HasScatterAnimation)
+                {
+                    var progress = concreteItem.AnimationProgress;
+
+                    // Apply easing (ease-out cubic for smooth deceleration)
+                    var easedProgress = EaseOutCubic(progress);
+
+                    // Calculate origin position
+                    var originX = X + concreteItem.OriginX!.Value * _tileWidth;
+                    var originY = Y + concreteItem.OriginY!.Value * _tileHeight;
+
+                    // Interpolate between origin and destination
+                    renderX = Lerp(originX, destX, easedProgress);
+                    renderY = Lerp(originY, destY, easedProgress);
+
+                    // Add arc for floaty feel (rises then falls)
+                    var arcHeight = 8f * (float)Math.Sin(progress * Math.PI);
+                    renderY -= arcHeight;
+                }
+
+                var centerX = renderX + (_tileWidth / 2);
+                var centerY = renderY + (_tileHeight / 2);
                 var textureXPosition = centerX - (mapItemWidth / 2);
                 var textureYPosition = centerY - (mapItemHeight / 2);
 
@@ -979,6 +1005,22 @@ public partial class MapInstance : MapDescriptor, IGameObject<Guid, MapInstance>
             var y = Y + (light.TileY * _tileHeight + light.OffsetY) + _tileHeight / 2f;
             Graphics.AddLight((int)x, (int)y, (int)w, light.Intensity, light.Expand, light.Color);
         }
+    }
+
+    /// <summary>
+    /// Ease-out cubic easing function for smooth deceleration.
+    /// </summary>
+    private static float EaseOutCubic(float t)
+    {
+        return 1f - (float)Math.Pow(1 - t, 3);
+    }
+
+    /// <summary>
+    /// Linear interpolation between two values.
+    /// </summary>
+    private static float Lerp(float start, float end, float t)
+    {
+        return start + (end - start) * t;
     }
 
     /// <summary>

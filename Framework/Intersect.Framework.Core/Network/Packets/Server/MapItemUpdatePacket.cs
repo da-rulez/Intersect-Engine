@@ -20,7 +20,7 @@ public partial class MapItemUpdatePacket : IntersectPacket
     }
 
     //Item data implies item added or updated
-    public MapItemUpdatePacket(Guid mapId, int tileIndex, Guid uniqueId, Guid itemId, Guid? bagId, int quantity, ItemProperties properties)
+    public MapItemUpdatePacket(Guid mapId, int tileIndex, Guid uniqueId, Guid itemId, Guid? bagId, int quantity, ItemProperties properties, int? originTileIndex = null)
     {
         MapId = mapId;
         TileIndex = tileIndex;
@@ -29,6 +29,7 @@ public partial class MapItemUpdatePacket : IntersectPacket
         BagId = bagId;
         Quantity = quantity;
         Properties = properties;
+        OriginTileIndex = originTileIndex;
     }
 
     [Key(0)]
@@ -51,5 +52,12 @@ public partial class MapItemUpdatePacket : IntersectPacket
 
     [Key(6)]
     public ItemProperties Properties { get; set; }
+
+    /// <summary>
+    /// The origin tile index where the item was spawned from (e.g., NPC position).
+    /// Used for scatter animation on the client. Null if no animation needed.
+    /// </summary>
+    [Key(7)]
+    public int? OriginTileIndex { get; set; }
 
 }
