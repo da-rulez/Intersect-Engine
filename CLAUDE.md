@@ -490,21 +490,75 @@ public class Player : Entity
 ### Database Model Changes
 
 **Location**: `Intersect.Server.Core/Database/`
+**Reference**: `Intersect.Server.Core/MIGRATIONS.md`
+
+#### Prerequisites
+Install Entity Framework tools (required once):
+```bash
+dotnet tool install --global dotnet-ef --version 7.*
+
+# On Unix-like systems if you get "no matches found":
+dotnet tool install --global dotnet-ef --version 7.\*
+```
+
+#### Supported Database Contexts
+- **Game** - Static game content (`GameContext` in code)
+- **Logging** - Event history (`LoggingContext` in code)
+- **Player** - Player data (`PlayerContext` in code)
+
+#### Creating Migrations
 
 1. **Add/modify entity model** in appropriate folder:
    - `PlayerData/Players/` - Player-related models
    - `PlayerData/Guilds/` - Guild models
    - `GameData/` - Static game data
+   - `Logging/` - Logging models
 
-2. **Create migration**:
+2. **Generate migration** (from `Intersect.Server.Core/` directory):
+
+   **Important**: Always specify `--startup-project`, `--namespace`, and `--output-dir`
+
+   **For SQLite Player Context:**
    ```bash
-   dotnet ef migrations add YourMigrationName --project Intersect.Server.Core
+   dotnet ef migrations add YourMigrationName \
+     --startup-project ../Intersect.Server/ \
+     --context SqlitePlayerContext \
+     --namespace Intersect.Server.Migrations.Sqlite.Player \
+     --output-dir Migrations/Sqlite/Player/ \
+     -- --databaseType Sqlite
    ```
 
-3. **Apply migration** (automatic on server start, or manual):
+   **For SQLite Game Context:**
    ```bash
-   dotnet ef database update --project Intersect.Server.Core
+   dotnet ef migrations add YourMigrationName \
+     --startup-project ../Intersect.Server/ \
+     --context SqliteGameContext \
+     --namespace Intersect.Server.Migrations.Sqlite.Game \
+     --output-dir Migrations/Sqlite/Game/ \
+     -- --databaseType Sqlite
    ```
+
+   **For SQLite Logging Context:**
+   ```bash
+   dotnet ef migrations add YourMigrationName \
+     --startup-project ../Intersect.Server/ \
+     --context SqliteLoggingContext \
+     --namespace Intersect.Server.Migrations.Sqlite.Logging \
+     --output-dir Migrations/Sqlite/Logging/ \
+     -- --databaseType Sqlite
+   ```
+
+   **For MySQL** (see `Intersect.Server/MIGRATIONS.md`):
+   ```bash
+   dotnet ef migrations add YourMigrationName \
+     --startup-project ../Intersect.Server/ \
+     --context MySqlPlayerContext \
+     --namespace Intersect.Server.Migrations.MySql.Player \
+     --output-dir Migrations/MySql/Player/ \
+     -- --databaseType MySql
+   ```
+
+3. **Apply migration**: Migrations are applied **automatically on server start**
 
 4. **Thread safety**: Use `DbInterface.Pool` for async database operations
 
