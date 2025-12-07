@@ -1,5 +1,11 @@
 # Quick Reference Card (30 seconds)
 
+## Fork Workflow
+**Repository**: da-rulez/Intersect-Engine (fork)
+**Default PR Target**: `development` branch
+**Branch Pattern**: `claude/name-<session-id>`
+**Never push to**: AscensionGameDev upstream
+
 ## Project Layout
 ```
 Intersect (Core)/          → Core infrastructure (note the space!)
