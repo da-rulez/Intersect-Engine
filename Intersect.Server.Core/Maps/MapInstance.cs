@@ -787,9 +787,14 @@ public partial class MapInstance : IMapInstance
         if ((itemDescriptor.ItemType != ItemType.Equipment && itemDescriptor.ItemType != ItemType.Bag) &&
             (itemDescriptor.Stackable || Options.Instance.Loot.ConsolidateMapDrops))
         {
+            // Calculate scatter position if enabled
+            var spawnX = x;
+            var spawnY = y;
+            var hasScatter = TryCalculateScatterPosition(x, y, out spawnX, out spawnY);
+
             // Does this item already exist on this tile? If so, get its value so we can simply consolidate the stack.
             var existingCount = 0;
-            var existingItems = FindItemsAt(y * Options.Instance.Map.MapWidth + x);
+            var existingItems = FindItemsAt(spawnY * Options.Instance.Map.MapWidth + spawnX);
             var toRemove = new List<MapItem>();
             foreach (var exItem in existingItems)
             {
@@ -801,13 +806,20 @@ public partial class MapInstance : IMapInstance
                 }
             }
 
-            var mapItem = new MapItem(item.ItemId, amount + existingCount, x, y, item.BagId, item.Bag)
+            var mapItem = new MapItem(item.ItemId, amount + existingCount, spawnX, spawnY, item.BagId, item.Bag)
             {
                 DespawnTime = Timing.Global.Milliseconds + (itemDescriptor.DespawnTime <= 0 ? Options.Instance.Loot.ItemDespawnTime : itemDescriptor.DespawnTime),
                 Owner = owner,
                 OwnershipTime = Timing.Global.Milliseconds + Options.Instance.Loot.ItemOwnershipTime,
                 VisibleToAll = Options.Instance.Loot.ShowUnownedItems || owner == Guid.Empty
             };
+
+            // Set origin position for scatter animation if scatter was applied
+            if (hasScatter)
+            {
+                mapItem.OriginX = x;
+                mapItem.OriginY = y;
+            }
 
             if (mapItem.TileIndex > Options.Instance.Map.MapHeight * Options.Instance.Map.MapWidth || mapItem.TileIndex < 0)
             {
@@ -836,13 +848,25 @@ public partial class MapInstance : IMapInstance
             // Oh boy here we go! Set quantity to 1 and drop multiple!
             for (var i = 0; i < amount; i++)
             {
-                var mapItem = new MapItem(item.ItemId, amount, x, y, item.BagId, item.Bag)
+                // Calculate scatter position for each item (each gets unique position)
+                var spawnX = x;
+                var spawnY = y;
+                var hasScatter = TryCalculateScatterPosition(x, y, out spawnX, out spawnY);
+
+                var mapItem = new MapItem(item.ItemId, amount, spawnX, spawnY, item.BagId, item.Bag)
                 {
                     DespawnTime = Timing.Global.Milliseconds + Options.Instance.Loot.ItemDespawnTime,
                     Owner = owner,
                     OwnershipTime = Timing.Global.Milliseconds + Options.Instance.Loot.ItemOwnershipTime,
                     VisibleToAll = Options.Instance.Loot.ShowUnownedItems || owner == Guid.Empty
                 };
+
+                // Set origin position for scatter animation if scatter was applied
+                if (hasScatter)
+                {
+                    mapItem.OriginX = x;
+                    mapItem.OriginY = y;
+                }
 
                 // If this is a piece of equipment, set up the stat buffs for it.
                 if (itemDescriptor.ItemType == ItemType.Equipment)
@@ -859,6 +883,72 @@ public partial class MapInstance : IMapInstance
             }
             PacketSender.SendMapItemsToProximity(mMapController.Id, this);
         }
+    }
+
+    /// <summary>
+    /// Calculates a scattered position for item drops if scatter is enabled.
+    /// </summary>
+    /// <param name="originX">The original X position (e.g., NPC position).</param>
+    /// <param name="originY">The original Y position (e.g., NPC position).</param>
+    /// <param name="scatterX">The scattered X position (output).</param>
+    /// <param name="scatterY">The scattered Y position (output).</param>
+    /// <returns>True if scatter was applied, false if item should spawn at origin.</returns>
+    private bool TryCalculateScatterPosition(int originX, int originY, out int scatterX, out int scatterY)
+    {
+        scatterX = originX;
+        scatterY = originY;
+
+        if (!Options.Instance.Loot.ScatterEnabled)
+        {
+            return false;
+        }
+
+        var maxDistance = Options.Instance.Loot.ScatterMaxDistance;
+        if (maxDistance <= 0)
+        {
+            return false;
+        }
+
+        var mapWidth = Options.Instance.Map.MapWidth;
+        var mapHeight = Options.Instance.Map.MapHeight;
+
+        // Try to find a valid scatter position
+        const int maxAttempts = 8;
+        for (var attempt = 0; attempt < maxAttempts; attempt++)
+        {
+            // Generate random offset within the scatter radius
+            var offsetX = Randomization.Next(-maxDistance, maxDistance + 1);
+            var offsetY = Randomization.Next(-maxDistance, maxDistance + 1);
+
+            // Skip if no offset (item would land at origin)
+            if (offsetX == 0 && offsetY == 0)
+            {
+                continue;
+            }
+
+            var targetX = originX + offsetX;
+            var targetY = originY + offsetY;
+
+            // Check bounds
+            if (targetX < 0 || targetX >= mapWidth || targetY < 0 || targetY >= mapHeight)
+            {
+                continue;
+            }
+
+            // Check if tile is walkable (no blocking attribute)
+            var attribute = mMapController.Attributes[targetX, targetY];
+            if (attribute != null && attribute.Type != (int)MapAttributeType.Walkable)
+            {
+                continue;
+            }
+
+            scatterX = targetX;
+            scatterY = targetY;
+            return true;
+        }
+
+        // Fallback: no valid scatter position found, use origin
+        return false;
     }
 
     /// <summary>
