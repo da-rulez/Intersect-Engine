@@ -2941,9 +2941,10 @@ public partial class Player : Entity
                     }
 
                     // Do we have any items to spawn to the map?
+                    // Note: Pass null as source to prevent scatter - this is overflow, not a new drop
                     if (spawnAmount > 0 && MapController.TryGetInstanceFromMap(Map.Id, MapInstanceId, out var instance))
                     {
-                        instance.SpawnItem(AsItemSource(), overflowTileX > -1 ? overflowTileX : X, overflowTileY > -1 ? overflowTileY : Y, item, spawnAmount, Id);
+                        instance.SpawnItem(null, overflowTileX > -1 ? overflowTileX : X, overflowTileY > -1 ? overflowTileY : Y, item, spawnAmount, Id);
                         return spawnAmount != item.Quantity;
                     }
 

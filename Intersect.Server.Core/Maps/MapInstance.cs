@@ -787,27 +787,16 @@ public partial class MapInstance : IMapInstance
         if ((itemDescriptor.ItemType != ItemType.Equipment && itemDescriptor.ItemType != ItemType.Bag) &&
             (itemDescriptor.Stackable || Options.Instance.Loot.ConsolidateMapDrops))
         {
-            // Calculate scatter position if enabled (stackable items don't scatter - they stay together)
+            // Calculate scatter position first
             var spawnX = x;
             var spawnY = y;
-            var hasScatter = false;
+            var hasScatter = TryCalculateScatterPosition(source, x, y, out spawnX, out spawnY);
 
-            // Only calculate scatter for fresh drops (no existing items to consolidate with)
-            var existingItems = FindItemsAt(y * Options.Instance.Map.MapWidth + x);
-            var hasExistingStack = existingItems.Any(exItem => exItem.ItemId == item.ItemId && exItem.Owner == owner);
-
-            // If consolidating, don't scatter - item goes to existing stack location
-            if (!hasExistingStack)
-            {
-                hasScatter = TryCalculateScatterPosition(source, x, y, out spawnX, out spawnY);
-            }
-
-            // Does this item already exist on this tile? If so, get its value so we can simply consolidate the stack.
+            // Look for existing items at the TARGET position (scattered or origin) to consolidate with
             var existingCount = 0;
-            var searchTileIndex = hasExistingStack ? (y * Options.Instance.Map.MapWidth + x) : (spawnY * Options.Instance.Map.MapWidth + spawnX);
-            var itemsAtTarget = FindItemsAt(searchTileIndex);
+            var existingItems = FindItemsAt(spawnY * Options.Instance.Map.MapWidth + spawnX);
             var toRemove = new List<MapItem>();
-            foreach (var exItem in itemsAtTarget)
+            foreach (var exItem in existingItems)
             {
                 // If the Id and Owner matches, get its quantity and remove the item so we don't get multiple stacks.
                 if (exItem.ItemId == item.ItemId && exItem.Owner == owner)
