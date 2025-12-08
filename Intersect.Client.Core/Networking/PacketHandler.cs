@@ -1305,9 +1305,10 @@ internal sealed partial class PacketHandler
                 map.MapItems.Add(packet.TileIndex, new List<IMapItemInstance>());
             }
 
-            // Check if the item already exists, if it does replace it. Otherwise just add it.
-            var mapItem = new MapItemInstance(packet.TileIndex, packet.Id, packet.ItemId, packet.BagId, packet.Quantity, packet.Properties, packet.OriginTileIndex);
-            if (map.MapItems[packet.TileIndex].Any(item => item.Id == mapItem.Id))
+            // Check if the item already exists anywhere on the map
+            IMapItemInstance? existingItem = null;
+            int? existingTileIndex = null;
+            foreach (var tileKvp in map.MapItems)
             {
                 existingItem = tileKvp.Value.FirstOrDefault(item => item.Id == packet.Id);
                 if (existingItem != null)

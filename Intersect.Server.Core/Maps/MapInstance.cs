@@ -852,7 +852,7 @@ public partial class MapInstance : IMapInstance
                 // Calculate scatter position for each item (each gets unique position)
                 var spawnX = x;
                 var spawnY = y;
-                var hasScatter = TryCalculateScatterPosition(x, y, out spawnX, out spawnY);
+                var hasScatter = TryCalculateScatterPosition(source, x, y, out spawnX, out spawnY);
 
                 var mapItem = new MapItem(item.ItemId, amount, spawnX, spawnY, item.BagId, item.Bag)
                 {
@@ -895,24 +895,38 @@ public partial class MapInstance : IMapInstance
     }
 
     /// <summary>
-    /// Calculates a scattered position for item drops if scatter is enabled.
+    /// Calculates a scattered position for item drops based on the source type.
+    /// Only NPC drops and player drops (if configured) will scatter.
     /// </summary>
+    /// <param name="source">The source of the item drop.</param>
     /// <param name="originX">The original X position (e.g., NPC position).</param>
     /// <param name="originY">The original Y position (e.g., NPC position).</param>
     /// <param name="scatterX">The scattered X position (output).</param>
     /// <param name="scatterY">The scattered Y position (output).</param>
     /// <returns>True if scatter was applied, false if item should spawn at origin.</returns>
-    private bool TryCalculateScatterPosition(int originX, int originY, out int scatterX, out int scatterY)
+    private bool TryCalculateScatterPosition(IItemSource? source, int originX, int originY, out int scatterX, out int scatterY)
     {
         scatterX = originX;
         scatterY = originY;
 
-        if (!Options.Instance.Loot.ScatterEnabled)
-        {
-            return false;
-        }
+        // Determine scatter distance based on source type
+        var maxDistance = 0;
 
-        var maxDistance = Options.Instance.Loot.ScatterMaxDistance;
+        if (source is EntityItemSource entitySource)
+        {
+            if (entitySource.EntityType == EntityType.Player)
+            {
+                // Player drops use PlayerDropScatterDistance
+                maxDistance = Options.Instance.Loot.PlayerDropScatterDistance;
+            }
+            else
+            {
+                // NPC/other entity drops use NpcDropScatterDistance
+                maxDistance = Options.Instance.Loot.NpcDropScatterDistance;
+            }
+        }
+        // Map sources, unknown sources, and null sources don't scatter
+
         if (maxDistance <= 0)
         {
             return false;
