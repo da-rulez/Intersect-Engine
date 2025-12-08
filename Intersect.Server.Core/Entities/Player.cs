@@ -1223,12 +1223,12 @@ public partial class Player : Entity
             }
         }
 
-        //Must have at least 1 hp and no less than 0 mp
+        //Must have at least 1 hp and no less than 0 mp/stamina
         if (vital == (int)Vital.Health)
         {
             classVital = Math.Max(classVital, 1);
         }
-        else if (vital == (int)Vital.Mana)
+        else if (vital == (int)Vital.Mana || vital == (int)Vital.Stamina)
         {
             classVital = Math.Max(classVital, 0);
         }
@@ -1246,6 +1246,7 @@ public partial class Player : Entity
         //If add/remove equipment then our vitals might exceed the new max.. this should fix those cases.
         SetVital(Vital.Health, GetVital(Vital.Health));
         SetVital(Vital.Mana, GetVital(Vital.Mana));
+        SetVital(Vital.Stamina, GetVital(Vital.Stamina));
     }
 
     #region Leveling

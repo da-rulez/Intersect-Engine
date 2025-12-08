@@ -417,6 +417,30 @@ public static partial class CommandProcessing
         }
     }
 
+    //Restore Stamina Command
+    private static void ProcessCommand(
+        RestoreStaminaCommand command,
+        Player player,
+        Event instance,
+        CommandInstance stackInfo,
+        Stack<CommandInstance> callStack
+    )
+    {
+        if (command.Amount > 0)
+        {
+            player.AddVital(Vital.Stamina, command.Amount);
+        }
+        else if (command.Amount < 0)
+        {
+            player.SubVital(Vital.Stamina, -command.Amount);
+            player.CombatTimer = Timing.Global.Milliseconds + Options.Instance.Combat.CombatTime;
+        }
+        else
+        {
+            player.RestoreVital(Vital.Stamina);
+        }
+    }
+
     //Level Up Command
     private static void ProcessCommand(
         LevelUpCommand command,
