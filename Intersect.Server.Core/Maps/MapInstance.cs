@@ -846,6 +846,7 @@ public partial class MapInstance : IMapInstance
         else
         {
             // Oh boy here we go! Set quantity to 1 and drop multiple!
+            var itemsToSend = new List<MapItem>();
             for (var i = 0; i < amount; i++)
             {
                 // Calculate scatter position for each item (each gets unique position)
@@ -880,8 +881,16 @@ public partial class MapInstance : IMapInstance
                 }
 
                 AddItem(source, mapItem);
+                itemsToSend.Add(mapItem);
             }
             PacketSender.SendMapItemsToProximity(mMapController.Id, this);
+
+            // Clear origin after sending to prevent animation replay on subsequent updates
+            foreach (var mapItem in itemsToSend)
+            {
+                mapItem.OriginX = null;
+                mapItem.OriginY = null;
+            }
         }
     }
 

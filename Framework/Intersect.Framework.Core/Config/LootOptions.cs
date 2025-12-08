@@ -48,6 +48,16 @@ public partial class LootOptions
     public bool IndividualizedLootAutoIncludePartyMembers { get; set; } = false;
 
     /// <summary>
+    /// Maximum distance in tiles that items can scatter when dropped from NPCs.
+    /// Set to 0 to disable scatter for NPC drops.
+    /// </summary>
+    public int NpcDropScatterDistance { get; set; } = 0;
+
+    /// <summary>
+    /// Maximum distance in tiles that items can scatter when dropped by players.
+    /// Set to 0 to disable scatter for player drops (items drop at player's feet).
+    /// </summary>
+    public int PlayerDropScatterDistance { get; set; } = 0;
     /// When enabled, items dropped from NPCs scatter outward in random directions
     /// instead of appearing directly at the NPC's position.
     /// </summary>
