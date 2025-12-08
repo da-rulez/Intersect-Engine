@@ -866,7 +866,7 @@ public partial class MapInstance : IMapInstance
                 // Calculate scatter position for each item (each gets unique position)
                 var spawnX = x;
                 var spawnY = y;
-                var hasScatter = TryCalculateScatterPosition(source, x, y, out spawnX, out spawnY);
+                var hasScatter = TryCalculateScatterPosition(null, x, y, out spawnX, out spawnY);
 
                 var mapItem = new MapItem(item.ItemId, 1, spawnX, spawnY, item.BagId, item.Bag)
                 {
