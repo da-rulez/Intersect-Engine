@@ -787,16 +787,27 @@ public partial class MapInstance : IMapInstance
         if ((itemDescriptor.ItemType != ItemType.Equipment && itemDescriptor.ItemType != ItemType.Bag) &&
             (itemDescriptor.Stackable || Options.Instance.Loot.ConsolidateMapDrops))
         {
-            // Calculate scatter position if enabled
+            // Calculate scatter position if enabled (stackable items don't scatter - they stay together)
             var spawnX = x;
             var spawnY = y;
-            var hasScatter = TryCalculateScatterPosition(x, y, out spawnX, out spawnY);
+            var hasScatter = false;
+
+            // Only calculate scatter for fresh drops (no existing items to consolidate with)
+            var existingItems = FindItemsAt(y * Options.Instance.Map.MapWidth + x);
+            var hasExistingStack = existingItems.Any(exItem => exItem.ItemId == item.ItemId && exItem.Owner == owner);
+
+            // If consolidating, don't scatter - item goes to existing stack location
+            if (!hasExistingStack)
+            {
+                hasScatter = TryCalculateScatterPosition(source, x, y, out spawnX, out spawnY);
+            }
 
             // Does this item already exist on this tile? If so, get its value so we can simply consolidate the stack.
             var existingCount = 0;
-            var existingItems = FindItemsAt(spawnY * Options.Instance.Map.MapWidth + spawnX);
+            var searchTileIndex = hasExistingStack ? (y * Options.Instance.Map.MapWidth + x) : (spawnY * Options.Instance.Map.MapWidth + spawnX);
+            var itemsAtTarget = FindItemsAt(searchTileIndex);
             var toRemove = new List<MapItem>();
-            foreach (var exItem in existingItems)
+            foreach (var exItem in itemsAtTarget)
             {
                 // If the Id and Owner matches, get its quantity and remove the item so we don't get multiple stacks.
                 if (exItem.ItemId == item.ItemId && exItem.Owner == owner)
@@ -841,12 +852,15 @@ public partial class MapInstance : IMapInstance
             if (sendUpdate)
             {
                 PacketSender.SendMapItemUpdate(mMapController.Id, MapInstanceId, mapItem, false);
+
+                // Clear origin immediately after sending to prevent animation replay
+                mapItem.OriginX = null;
+                mapItem.OriginY = null;
             }
         }
         else
         {
-            // Oh boy here we go! Set quantity to 1 and drop multiple!
-            var itemsToSend = new List<MapItem>();
+            // Non-stackable items: drop each one individually
             for (var i = 0; i < amount; i++)
             {
                 // Calculate scatter position for each item (each gets unique position)
@@ -854,7 +868,7 @@ public partial class MapInstance : IMapInstance
                 var spawnY = y;
                 var hasScatter = TryCalculateScatterPosition(source, x, y, out spawnX, out spawnY);
 
-                var mapItem = new MapItem(item.ItemId, amount, spawnX, spawnY, item.BagId, item.Bag)
+                var mapItem = new MapItem(item.ItemId, 1, spawnX, spawnY, item.BagId, item.Bag)
                 {
                     DespawnTime = Timing.Global.Milliseconds + Options.Instance.Loot.ItemDespawnTime,
                     Owner = owner,
@@ -881,15 +895,16 @@ public partial class MapInstance : IMapInstance
                 }
 
                 AddItem(source, mapItem);
-                itemsToSend.Add(mapItem);
-            }
-            PacketSender.SendMapItemsToProximity(mMapController.Id, this);
 
-            // Clear origin after sending to prevent animation replay on subsequent updates
-            foreach (var mapItem in itemsToSend)
-            {
-                mapItem.OriginX = null;
-                mapItem.OriginY = null;
+                // Send individual update instead of bulk to preserve animation
+                if (sendUpdate)
+                {
+                    PacketSender.SendMapItemUpdate(mMapController.Id, MapInstanceId, mapItem, false);
+
+                    // Clear origin immediately after sending to prevent animation replay
+                    mapItem.OriginX = null;
+                    mapItem.OriginY = null;
+                }
             }
         }
     }

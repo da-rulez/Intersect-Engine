@@ -1289,7 +1289,7 @@ internal sealed partial class PacketHandler
         if (packet.ItemId == Guid.Empty)
         {
             // Find our item based on our unique Id and remove it.
-            foreach(var location in map.MapItems.Keys)
+            foreach (var location in map.MapItems.Keys)
             {
                 var tempItem = map.MapItems[location].Where(item => item.Id == packet.Id).SingleOrDefault();
                 if (tempItem != null)
