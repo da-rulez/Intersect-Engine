@@ -1305,21 +1305,37 @@ internal sealed partial class PacketHandler
                 map.MapItems.Add(packet.TileIndex, new List<IMapItemInstance>());
             }
 
-            // Check if the item already exists, if it does replace it. Otherwise just add it.
-            var mapItem = new MapItemInstance(packet.TileIndex, packet.Id, packet.ItemId, packet.BagId, packet.Quantity, packet.Properties, packet.OriginTileIndex);
-            if (map.MapItems[packet.TileIndex].Any(item => item.Id == mapItem.Id))
+            // Check if the item already exists anywhere on the map
+            IMapItemInstance? existingItem = null;
+            int? existingTileIndex = null;
+            foreach (var tileKvp in map.MapItems)
             {
-                for (var index = 0; index < map.MapItems[packet.TileIndex].Count; index++)
+                existingItem = tileKvp.Value.FirstOrDefault(item => item.Id == packet.Id);
+                if (existingItem != null)
                 {
-                    if (map.MapItems[packet.TileIndex][index].Id == mapItem.Id)
-                    {
-                        map.MapItems[packet.TileIndex][index] = mapItem;
-                    }
+                    existingTileIndex = tileKvp.Key;
+                    break;
                 }
+            }
+
+            if (existingItem != null)
+            {
+                // Item exists - update without animation (don't pass origin to avoid replay)
+                var updatedItem = new MapItemInstance(packet.TileIndex, packet.Id, packet.ItemId, packet.BagId, packet.Quantity, packet.Properties);
+
+                // Remove from old location
+                if (existingTileIndex.HasValue)
+                {
+                    map.MapItems[existingTileIndex.Value].Remove(existingItem);
+                }
+
+                // Add to new location
+                map.MapItems[packet.TileIndex].Add(updatedItem);
             }
             else
             {
-                // Reverse the array again to match server, add item.. then  reverse again to get the right render order.
+                // New item - create with animation if origin provided
+                var mapItem = new MapItemInstance(packet.TileIndex, packet.Id, packet.ItemId, packet.BagId, packet.Quantity, packet.Properties, packet.OriginTileIndex);
                 map.MapItems[packet.TileIndex].Add(mapItem);
             }
         }
