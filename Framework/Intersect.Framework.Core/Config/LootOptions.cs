@@ -58,6 +58,16 @@ public partial class LootOptions
     /// Set to 0 to disable scatter for player drops (items drop at player's feet).
     /// </summary>
     public int PlayerDropScatterDistance { get; set; } = 0;
+    /// When enabled, items dropped from NPCs scatter outward in random directions
+    /// instead of appearing directly at the NPC's position.
+    /// </summary>
+    public bool ScatterEnabled { get; set; } = true;
+
+    /// <summary>
+    /// Maximum distance in tiles that items can scatter from the drop source.
+    /// Items will land randomly within this radius.
+    /// </summary>
+    public int ScatterMaxDistance { get; set; } = 1;
 
     /// <summary>
     /// Duration of the scatter animation in milliseconds.

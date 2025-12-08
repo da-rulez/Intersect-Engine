@@ -10,7 +10,17 @@
 - **Architecture**: Client-Server with embedded single-player mode
 - **Primary Platforms**: Windows (editor), Linux, macOS (client/server)
 - **Current Version**: 0.8.0-beta
-- **Repository**: https://github.com/AscensionGameDev/Intersect-Engine
+- **Upstream Repository**: https://github.com/AscensionGameDev/Intersect-Engine
+- **This Fork**: https://github.com/da-rulez/Intersect-Engine
+- **Default Branch for PRs**: `development`
+
+## Quick Navigation
+
+**⚡ Fast Start?** Read `.claude/QUICK_REF.md` (30 seconds) instead of this full guide.
+
+**🚀 Speed Optimization?** See `.claude/README.md` for build performance tips.
+
+**📋 What to Skip?** Check `.claudeignore` for files to avoid reading.
 
 ## Table of Contents
 
@@ -482,21 +492,75 @@ public class Player : Entity
 ### Database Model Changes
 
 **Location**: `Intersect.Server.Core/Database/`
+**Reference**: `Intersect.Server.Core/MIGRATIONS.md`
+
+#### Prerequisites
+Install Entity Framework tools (required once):
+```bash
+dotnet tool install --global dotnet-ef --version 7.*
+
+# On Unix-like systems if you get "no matches found":
+dotnet tool install --global dotnet-ef --version 7.\*
+```
+
+#### Supported Database Contexts
+- **Game** - Static game content (`GameContext` in code)
+- **Logging** - Event history (`LoggingContext` in code)
+- **Player** - Player data (`PlayerContext` in code)
+
+#### Creating Migrations
 
 1. **Add/modify entity model** in appropriate folder:
    - `PlayerData/Players/` - Player-related models
    - `PlayerData/Guilds/` - Guild models
    - `GameData/` - Static game data
+   - `Logging/` - Logging models
 
-2. **Create migration**:
+2. **Generate migration** (from `Intersect.Server.Core/` directory):
+
+   **Important**: Always specify `--startup-project`, `--namespace`, and `--output-dir`
+
+   **For SQLite Player Context:**
    ```bash
-   dotnet ef migrations add YourMigrationName --project Intersect.Server.Core
+   dotnet ef migrations add YourMigrationName \
+     --startup-project ../Intersect.Server/ \
+     --context SqlitePlayerContext \
+     --namespace Intersect.Server.Migrations.Sqlite.Player \
+     --output-dir Migrations/Sqlite/Player/ \
+     -- --databaseType Sqlite
    ```
 
-3. **Apply migration** (automatic on server start, or manual):
+   **For SQLite Game Context:**
    ```bash
-   dotnet ef database update --project Intersect.Server.Core
+   dotnet ef migrations add YourMigrationName \
+     --startup-project ../Intersect.Server/ \
+     --context SqliteGameContext \
+     --namespace Intersect.Server.Migrations.Sqlite.Game \
+     --output-dir Migrations/Sqlite/Game/ \
+     -- --databaseType Sqlite
    ```
+
+   **For SQLite Logging Context:**
+   ```bash
+   dotnet ef migrations add YourMigrationName \
+     --startup-project ../Intersect.Server/ \
+     --context SqliteLoggingContext \
+     --namespace Intersect.Server.Migrations.Sqlite.Logging \
+     --output-dir Migrations/Sqlite/Logging/ \
+     -- --databaseType Sqlite
+   ```
+
+   **For MySQL** (see `Intersect.Server/MIGRATIONS.md`):
+   ```bash
+   dotnet ef migrations add YourMigrationName \
+     --startup-project ../Intersect.Server/ \
+     --context MySqlPlayerContext \
+     --namespace Intersect.Server.Migrations.MySql.Player \
+     --output-dir Migrations/MySql/Player/ \
+     -- --databaseType MySql
+   ```
+
+3. **Apply migration**: Migrations are applied **automatically on server start**
 
 4. **Thread safety**: Use `DbInterface.Pool` for async database operations
 
@@ -727,10 +791,19 @@ PacketDispatcher.Dispatch(connection, packet);
 
 ## Pull Request Guidelines
 
+### Fork Workflow (da-rulez)
+
+**IMPORTANT**: This fork (da-rulez/Intersect-Engine) uses a separate workflow from upstream:
+
+- **All PRs target**: `da-rulez/Intersect-Engine:development`
+- **Never push to**: AscensionGameDev/Intersect-Engine (upstream)
+- **Branch naming**: Must start with `claude/` and end with session ID
+- **PR URL format**: `https://github.com/da-rulez/Intersect-Engine/compare/development...claude/branch-name`
+
 ### Before Creating a PR
 
 1. **Associate with issue**: Start PR description with `Resolves #123`
-2. **Rebase on target branch**: Keep PR up-to-date
+2. **Rebase on target branch**: Keep PR up-to-date with `development`
 3. **Resolve merge conflicts**: Author's responsibility
 4. **Test thoroughly**: Provide screenshots/recordings
 5. **Sign commits**: GPG signing required for `main`, recommended for all
@@ -777,16 +850,17 @@ Same as commit messages, but precedence: `feat` > `fix` > `chore`
 
 ### When Working with This Codebase
 
-1. **Read before modifying**: Always read files before editing them
-2. **Respect licensing**: Remember split licensing (MIT vs GPLv3)
-3. **Follow editorconfig**: Maintain code style consistency
-4. **Test changes**: Build and run tests after modifications
-5. **Keep context**: Note the directory name "Intersect (Core)" has a space
-6. **Check platform**: Some features are Windows-only (Editor)
-7. **Use proper paths**: Always use absolute paths for file operations
-8. **Understand architecture**: Review this document's architecture section
-9. **Plugin first**: Consider plugin-based solutions before core changes
-10. **Backward compatibility**: Avoid breaking changes on stable branches
+1. **Fork workflow**: All PRs target `da-rulez/Intersect-Engine:development` (never upstream)
+2. **Read before modifying**: Always read files before editing them
+3. **Respect licensing**: Remember split licensing (MIT vs GPLv3)
+4. **Follow editorconfig**: Maintain code style consistency
+5. **Test changes**: Build and run tests after modifications
+6. **Keep context**: Note the directory name "Intersect (Core)" has a space
+7. **Check platform**: Some features are Windows-only (Editor)
+8. **Use proper paths**: Always use absolute paths for file operations
+9. **Understand architecture**: Review this document's architecture section
+10. **Plugin first**: Consider plugin-based solutions before core changes
+11. **Backward compatibility**: Avoid breaking changes on stable branches
 
 ### Common Pitfalls to Avoid
 

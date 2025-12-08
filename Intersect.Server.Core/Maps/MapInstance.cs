@@ -787,9 +787,10 @@ public partial class MapInstance : IMapInstance
         if ((itemDescriptor.ItemType != ItemType.Equipment && itemDescriptor.ItemType != ItemType.Bag) &&
             (itemDescriptor.Stackable || Options.Instance.Loot.ConsolidateMapDrops))
         {
-            // Stackable items don't scatter - they stay together at the drop location
+            // Calculate scatter position if enabled
             var spawnX = x;
             var spawnY = y;
+            var hasScatter = TryCalculateScatterPosition(x, y, out spawnX, out spawnY);
 
             // Does this item already exist on this tile? If so, get its value so we can simply consolidate the stack.
             var existingCount = 0;
@@ -812,6 +813,13 @@ public partial class MapInstance : IMapInstance
                 OwnershipTime = Timing.Global.Milliseconds + Options.Instance.Loot.ItemOwnershipTime,
                 VisibleToAll = Options.Instance.Loot.ShowUnownedItems || owner == Guid.Empty
             };
+
+            // Set origin position for scatter animation if scatter was applied
+            if (hasScatter)
+            {
+                mapItem.OriginX = x;
+                mapItem.OriginY = y;
+            }
 
             if (mapItem.TileIndex > Options.Instance.Map.MapHeight * Options.Instance.Map.MapWidth || mapItem.TileIndex < 0)
             {
@@ -844,7 +852,7 @@ public partial class MapInstance : IMapInstance
                 // Calculate scatter position for each item (each gets unique position)
                 var spawnX = x;
                 var spawnY = y;
-                var hasScatter = TryCalculateScatterPosition(source, x, y, out spawnX, out spawnY);
+                var hasScatter = TryCalculateScatterPosition(x, y, out spawnX, out spawnY);
 
                 var mapItem = new MapItem(item.ItemId, amount, spawnX, spawnY, item.BagId, item.Bag)
                 {
@@ -887,38 +895,24 @@ public partial class MapInstance : IMapInstance
     }
 
     /// <summary>
-    /// Calculates a scattered position for item drops based on the source type.
-    /// Only NPC drops and player drops (if configured) will scatter.
+    /// Calculates a scattered position for item drops if scatter is enabled.
     /// </summary>
-    /// <param name="source">The source of the item drop.</param>
     /// <param name="originX">The original X position (e.g., NPC position).</param>
     /// <param name="originY">The original Y position (e.g., NPC position).</param>
     /// <param name="scatterX">The scattered X position (output).</param>
     /// <param name="scatterY">The scattered Y position (output).</param>
     /// <returns>True if scatter was applied, false if item should spawn at origin.</returns>
-    private bool TryCalculateScatterPosition(IItemSource? source, int originX, int originY, out int scatterX, out int scatterY)
+    private bool TryCalculateScatterPosition(int originX, int originY, out int scatterX, out int scatterY)
     {
         scatterX = originX;
         scatterY = originY;
 
-        // Determine scatter distance based on source type
-        var maxDistance = 0;
-
-        if (source is EntityItemSource entitySource)
+        if (!Options.Instance.Loot.ScatterEnabled)
         {
-            if (entitySource.EntityType == EntityType.Player)
-            {
-                // Player drops use PlayerDropScatterDistance
-                maxDistance = Options.Instance.Loot.PlayerDropScatterDistance;
-            }
-            else
-            {
-                // NPC/other entity drops use NpcDropScatterDistance
-                maxDistance = Options.Instance.Loot.NpcDropScatterDistance;
-            }
+            return false;
         }
-        // Map sources, unknown sources, and null sources don't scatter
 
+        var maxDistance = Options.Instance.Loot.ScatterMaxDistance;
         if (maxDistance <= 0)
         {
             return false;

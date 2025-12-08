@@ -1,0 +1,88 @@
+# .claudeignore - Files/directories AI assistants should skip to save resources
+
+# Build outputs (never read these)
+**/bin/
+**/obj/
+**/publish/
+
+# Generated network keys (binary files)
+**/keys/
+
+# Dependencies (third-party code)
+vendor/
+**/node_modules/
+
+# Assets (binary files, managed in separate repo)
+assets/
+
+# IDE files
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.sln.DotSettings.user
+
+# Build logs
+*.binlog
+*.log
+
+# Database files (binary)
+*.db
+*.db-shm
+*.db-wal
+
+# Compiled binaries
+*.dll
+*.exe
+*.pdb
+*.cache
+
+# NuGet packages
+packages/
+*.nupkg
+
+# Test results
+TestResults/
+*.trx
+coverage*.json
+coverage*.xml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*~
+
+# Large generated files
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.wav
+*.mp3
+*.ogg
+
+# Specific large directories to skip unless explicitly needed
+Utilities/
+scripts/AUTHORS.md.updater.devtools.js
+
+# Old patch file (read once, then ignore)
+disable-windows-only.patch
+
+# GitHub workflow files (unless modifying CI/CD)
+.github/workflows/
+
+# Migration files (read when needed for DB work only)
+**/Migrations/
+
+# Example projects (read when learning plugin system only)
+Examples/Intersect.Examples.Plugin.Client.Tests/
+Examples/Intersect.Examples.Plugin.Client/
+Examples/Intersect.Examples.Plugin/
