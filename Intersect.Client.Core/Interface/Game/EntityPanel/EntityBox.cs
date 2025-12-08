@@ -41,6 +41,8 @@ public partial class EntityBox
 
     public float CurShieldSize = -1;
 
+    public float CurSpSize = -1;
+
     public ImagePanel EntityFace;
 
     public ImagePanel EntityFaceContainer;
@@ -88,6 +90,14 @@ public partial class EntityBox
     public Label MpTitle;
 
     public IEntity? MyEntity;
+
+    public ImagePanel SpBackground;
+
+    public ImagePanel SpBar;
+
+    public Label SpLbl;
+
+    public Label SpTitle;
 
     public ImagePanel[] PaperdollPanels;
 
@@ -161,6 +171,12 @@ public partial class EntityBox
         MpTitle = new Label(EntityInfoPanel, "MPTitle");
         MpTitle.SetText(Strings.EntityBox.Vital1);
         MpLbl = new Label(EntityInfoPanel, "MPLabel");
+
+        SpBackground = new ImagePanel(EntityInfoPanel, "SPBackground");
+        SpBar = new ImagePanel(EntityInfoPanel, "SPBar");
+        SpTitle = new Label(EntityInfoPanel, "SPTitle");
+        SpTitle.SetText(Strings.EntityBox.Vital2);
+        SpLbl = new Label(EntityInfoPanel, "SPLabel");
 
         ExpBackground = new ImagePanel(EntityInfoPanel, "EXPBackground");
         ExpBar = new ImagePanel(EntityInfoPanel, "EXPBar");
@@ -257,6 +273,10 @@ public partial class EntityBox
         MpBar.Show();
         MpTitle.Show();
         MpLbl.Show();
+        SpBackground.Show();
+        SpBar.Show();
+        SpTitle.Show();
+        SpLbl.Show();
         HpBackground.Show();
         HpBar.Show();
         HpLbl.Show();
@@ -271,10 +291,12 @@ public partial class EntityBox
         CurHpSize = -1;
         CurShieldSize = -1;
         CurMpSize = -1;
+        CurSpSize = -1;
         CurExpSize = -1;
         ShieldBar.Hide();
         UpdateHpBar(0, true);
         UpdateMpBar(0, true);
+        UpdateStaminaBar(0, true);
         if (MyEntity is Player)
         {
             UpdateXpBar(0, true);
@@ -387,6 +409,7 @@ public partial class EntityBox
             UpdateMap();
             UpdateHpBar(elapsedTime);
             UpdateMpBar(elapsedTime);
+            UpdateStaminaBar(elapsedTime);
         }
         else
         {
@@ -694,6 +717,50 @@ public partial class EntityBox
             else
             {
                 UpdateGauge(MpBackground, MpBar, CurMpSize, barDirectionSetting);
+            }
+        }
+    }
+
+    private void UpdateStaminaBar(float elapsedTime, bool instant = false)
+    {
+        float targetSpSize;
+        var barDirectionSetting = ClientConfiguration.Instance.EntityBarDirections[(int)Vital.Stamina];
+        var barPercentageSetting = Globals.Database.ShowStaminaAsPercentage;
+        var entityVital = MyEntity.Vitals[Vital.Stamina];
+        var entityMaxVital = MyEntity.MaxVitals[Vital.Stamina];
+
+        if (entityVital > 0)
+        {
+
+            var entityVitalRatio = (float)entityVital / entityMaxVital;
+            var vitalSize = (int)barDirectionSetting < (int)DisplayDirection.TopToBottom
+                ? SpBackground.Width
+                : SpBackground.Height;
+            float spPercentage = entityVitalRatio * 100;
+            var spPercentageText = $"{spPercentage:0.##}%";
+            var spValueText = Strings.EntityBox.Vital2Value.ToString(entityVital, entityMaxVital);
+            SpLbl.Text = barPercentageSetting ? spPercentageText : spValueText;
+            SpBackground.SetToolTipText(barPercentageSetting ? spValueText : spPercentageText);
+            targetSpSize = SetTargetBarSize(entityVitalRatio, vitalSize);
+        }
+        else
+        {
+            SpLbl.Text = barPercentageSetting ? "0%" : Strings.EntityBox.Vital2Value.ToString(0, entityMaxVital);
+            SpBackground.SetToolTipText(barPercentageSetting ? Strings.EntityBox.Vital2Value.ToString(0, entityMaxVital) : "0%");
+            targetSpSize = 0;
+        }
+
+        if ((int)targetSpSize != (int)CurSpSize)
+        {
+            CurSpSize = SetCurrentBarSize(elapsedTime, instant, targetSpSize, CurSpSize);
+
+            if (CurSpSize == 0)
+            {
+                SpBar.IsHidden = true;
+            }
+            else
+            {
+                UpdateGauge(SpBackground, SpBar, CurSpSize, barDirectionSetting);
             }
         }
     }

@@ -5,4 +5,6 @@ public enum Vital
     Health = 0,
 
     Mana,
+
+    Stamina,
 }

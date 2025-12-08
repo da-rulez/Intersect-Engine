@@ -65,6 +65,8 @@ public abstract partial class GameDatabase
 
     public bool ShowManaAsPercentage { get; set; }
 
+    public bool ShowStaminaAsPercentage { get; set; }
+
     public bool SimplifiedEscapeMenu { get; set; }
 
     public TypewriterBehavior TypewriterBehavior { get; set; }
@@ -145,6 +147,7 @@ public abstract partial class GameDatabase
         ShowExperienceAsPercentage = LoadPreference(nameof(ShowExperienceAsPercentage), true);
         ShowHealthAsPercentage = LoadPreference(nameof(ShowHealthAsPercentage), false);
         ShowManaAsPercentage = LoadPreference(nameof(ShowManaAsPercentage), false);
+        ShowStaminaAsPercentage = LoadPreference(nameof(ShowStaminaAsPercentage), false);
         SimplifiedEscapeMenu = LoadPreference(nameof(SimplifiedEscapeMenu), false);
         TypewriterBehavior = LoadPreference(nameof(TypewriterBehavior), TypewriterBehavior.Word);
         UIScale = LoadPreference(nameof(UIScale), 1.0f);
@@ -186,6 +189,7 @@ public abstract partial class GameDatabase
         SavePreference(nameof(ShowExperienceAsPercentage), ShowExperienceAsPercentage);
         SavePreference(nameof(ShowHealthAsPercentage), ShowHealthAsPercentage);
         SavePreference(nameof(ShowManaAsPercentage), ShowManaAsPercentage);
+        SavePreference(nameof(ShowStaminaAsPercentage), ShowStaminaAsPercentage);
         SavePreference(nameof(SimplifiedEscapeMenu), SimplifiedEscapeMenu);
         SavePreference(nameof(TypewriterBehavior), TypewriterBehavior);
         SavePreference(nameof(UIScale), UIScale);

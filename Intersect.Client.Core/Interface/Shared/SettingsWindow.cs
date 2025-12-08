@@ -43,6 +43,7 @@ public partial class SettingsWindow : Window
     private readonly LabeledCheckBox _showExperienceAsPercentageCheckbox;
     private readonly LabeledCheckBox _showHealthAsPercentageCheckbox;
     private readonly LabeledCheckBox _showManaAsPercentageCheckbox;
+    private readonly LabeledCheckBox _showStaminaAsPercentageCheckbox;
     private readonly LabeledCheckBox _simplifiedEscapeMenu;
 
     // Game Settings - Information
@@ -218,6 +219,14 @@ public partial class SettingsWindow : Window
             Font = _defaultFont,
             FontSize = 12,
             Text = Strings.Settings.ShowManaAsPercentage,
+        };
+
+        _showStaminaAsPercentageCheckbox = new LabeledCheckBox(parent: _interfaceSettings, name: nameof(_showStaminaAsPercentageCheckbox))
+        {
+            Dock = Pos.Top,
+            Font = _defaultFont,
+            FontSize = 12,
+            Text = Strings.Settings.ShowStaminaAsPercentage,
         };
 
         // Game Settings - Interface: simplified escape menu.
@@ -972,6 +981,7 @@ public partial class SettingsWindow : Window
         _autoToggleChatLogCheckbox.IsChecked = Globals.Database.AutoToggleChatLog;
         _showHealthAsPercentageCheckbox.IsChecked = Globals.Database.ShowHealthAsPercentage;
         _showManaAsPercentageCheckbox.IsChecked = Globals.Database.ShowManaAsPercentage;
+        _showStaminaAsPercentageCheckbox.IsChecked = Globals.Database.ShowStaminaAsPercentage;
         _showExperienceAsPercentageCheckbox.IsChecked = Globals.Database.ShowExperienceAsPercentage;
         _simplifiedEscapeMenu.IsChecked = Globals.Database.SimplifiedEscapeMenu;
         _friendOverheadInfoCheckbox.IsChecked = Globals.Database.FriendOverheadInfo;
@@ -1154,6 +1164,7 @@ public partial class SettingsWindow : Window
         Globals.Database.ShowExperienceAsPercentage = _showExperienceAsPercentageCheckbox.IsChecked;
         Globals.Database.ShowHealthAsPercentage = _showHealthAsPercentageCheckbox.IsChecked;
         Globals.Database.ShowManaAsPercentage = _showManaAsPercentageCheckbox.IsChecked;
+        Globals.Database.ShowStaminaAsPercentage = _showStaminaAsPercentageCheckbox.IsChecked;
         Globals.Database.SimplifiedEscapeMenu = _simplifiedEscapeMenu.IsChecked;
         Globals.Database.FriendOverheadInfo = _friendOverheadInfoCheckbox.IsChecked;
         Globals.Database.GuildMemberOverheadInfo = _guildMemberOverheadInfoCheckbox.IsChecked;
